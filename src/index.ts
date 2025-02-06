@@ -44,32 +44,51 @@ export type TextComponent = RootComponent & {
     id: string;
 }
 
+export interface Content {
+    /**
+     * 고유 콘텐츠 ID
+     * - 콘텐츠를 식별하는 고유한 ID입니다.
+     */
+    readonly id: string;
 
-export type Content = {
-    components: (BlankComponent | TabComponent | ProductComponent | ImageComponent | TextComponent)[];
-    id: string;
-    period: DisplayPeriod;
-    yn: CommonYn;
-    imageUrl: string;
-    memo: string;
-    title: string;
+    /**
+     * 콘텐츠의 제목
+     * - 콘텐츠의 제목을 나타냅니다.
+     */
+    readonly title: string;
+
+    /**
+     * 콘텐츠의 이미지 URL
+     * - 콘텐츠와 관련된 이미지를 나타내는 URL입니다.
+     */
+    readonly imageUrl: string;
+
+    /**
+     * 콘텐츠의 표시 기간
+     * - 콘텐츠가 표시되는 기간을 나타냅니다.
+     */
+    readonly period: DisplayPeriod;
+
+    /**
+     * 콘텐츠의 표시 여부
+     * - 'Y' 또는 'N' 값으로 콘텐츠가 활성화되어 있는지 나타냅니다.
+     */
+    readonly yn: CommonYn;
+
+    /**
+     * 콘텐츠의 메모
+     * - 콘텐츠에 대한 설명이나 추가 정보를 담을 수 있는 메모입니다.
+     */
+    readonly memo: string;
+
+    /**
+     * 콘텐츠를 구성하는 컴포넌트들
+     * - `BlankComponent`, `TabComponent`, `ProductComponent`, `ImageComponent`, `TextComponent` 등 다양한 타입의 컴포넌트를 포함하는 배열입니다.
+     * - 배열 자체를 수정할 수 없도록 `readonly` 키워드를 추가합니다.
+     */
+    readonly components: readonly (BlankComponent | TabComponent | ProductComponent | ImageComponent | TextComponent)[];
 };
 
 
 
-export interface ContentApi {
-    /**
-     * 주어진 부모 ID를 기준으로 두 개의 상품 ID를 받아서 그들의 위치를 바꿉니다.
-     * @param parentId - 부모 ID (상품이 속한 그룹 ID)
-     * @param productId1 - 첫 번째 상품의 ID
-     * @param productId2 - 두 번째 상품의 ID
-     */
-    swapProductPositions: (itemGroupId: string, productId1: string, productId2: string) => void;
 
-    /**
-     * 두 개의 컴포넌트 ID를 받아서 그들의 위치를 바꿉니다.
-     * @param id1 - 첫 번째 컴포넌트의 ID
-     * @param id2 - 두 번째 컴포넌트의 ID
-     */
-    swapComponentPositions: (id1: string, id2: string) => void;
-}
