@@ -14,7 +14,10 @@ export type Component =
   | ImageComponent
   | TextComponent;
 
-export interface IComponentCollection {
+/**
+ * `ComponentCollectionService`을 관리하는 서비스 인터페이스
+ */
+export interface IComponentCollectionService {
   /**
    * 새로운 컴포넌트를 추가합니다.
    * @param component - 추가할 컴포넌트 객체
@@ -54,7 +57,7 @@ export interface IComponentCollection {
   getComponentById(id: string): Component | undefined;
 }
 
-export class ComponentCollection implements IComponentCollection {
+export class ComponentCollectionService implements IComponentCollectionService {
   private components: readonly Component[];
 
   constructor(initialComponents: readonly Component[]) {

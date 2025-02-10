@@ -1,26 +1,26 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { ImageComponent } from "../src";
 import {
-  ComponentCollection,
-  IComponentCollection,
-} from "../src/component-collection";
+  ComponentCollectionService,
+  IComponentCollectionService,
+} from "../src/component-collection-service";
 
 describe("ComponentCollection", () => {
-  let componentCollection: IComponentCollection;
+  let componentCollection: IComponentCollectionService;
   let imageComponent: ImageComponent;
 
   beforeEach(() => {
-    componentCollection = new ComponentCollection([]);
+    componentCollection = new ComponentCollectionService([]);
 
     imageComponent = {
       id: "comp-1",
       type: "image",
-      name: "image-comp",
-      order: 1,
+      componentName: "image-comp",
+      componentOrder: 1,
       image: {
         id: "image-comp-1",
       },
-      period: {
+      componentPeriod: {
         startDate: new Date(),
         endDate: new Date(),
       },
@@ -29,7 +29,7 @@ describe("ComponentCollection", () => {
   });
 
   it("초기 컴포넌트는 빈배열이어야 한다.", () => {
-    const emptyCollection = new ComponentCollection([]);
+    const emptyCollection = new ComponentCollectionService([]);
     expect(emptyCollection.getComponents()).toBeInstanceOf(Array);
     expect(emptyCollection.getComponents().length).toBe(0);
   });
@@ -52,19 +52,19 @@ describe("ComponentCollection", () => {
     const beforeUpdateComponent = componentCollection.getComponentById(id);
 
     componentCollection.updateComponent(id, {
-      name: "test-name",
+      componentName: "test-name",
     });
 
     const updatedComponent = componentCollection.getComponentById(id);
 
     expect(updatedComponent).toBeDefined();
-    expect(updatedComponent?.name).toBe("test-name");
+    expect(updatedComponent?.componentName).toBe("test-name");
 
     // 불변성 유지 검증 (이전 객체와 참조값이 다르면 불변성이 유지된 것)
     expect(updatedComponent).not.toBe(beforeUpdateComponent);
 
     // 원본 객체가 변경되지 않았는지 확인
-    expect(beforeUpdateComponent?.name).not.toBe("test-name");
+    expect(beforeUpdateComponent?.componentName).not.toBe("test-name");
 
     // `updateComponent()`가 새로운 객체를 반환했는지 검증
     expect(componentCollection.getComponents()).not.toContain(
@@ -86,12 +86,12 @@ describe("ComponentCollection", () => {
     const component2: ImageComponent = {
       id: "comp-2",
       type: "image",
-      name: "image-comp-2",
-      order: 2,
+      componentName: "image-comp-2",
+      componentOrder: 2,
       image: {
         id: "image-comp-2",
       },
-      period: {
+      componentPeriod: {
         startDate: new Date(),
         endDate: new Date(),
       },
