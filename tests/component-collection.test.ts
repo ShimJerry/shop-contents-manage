@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { ImageComponent } from "../src";
 import {
   ComponentCollection,
   IComponentCollection,
 } from "../src/component-collection";
-import { ImageComponent } from "../src";
 
 describe("ComponentCollection", () => {
   let componentCollection: IComponentCollection;

@@ -61,19 +61,45 @@ export class ComponentCollection implements IComponentCollection {
     this.components = [...initialComponents];
   }
 
-  addComponent(component: Component): void {}
+  addComponent(component: Component): void {
+    this.components = [...this.components, component];
+  }
 
-  updateComponent(id: string, updates: Partial<RootComponent>): void {}
+  updateComponent(id: string, updates: Partial<RootComponent>): void {
+    this.components = this.components.map((component) =>
+      component.id === id ? { ...component, ...updates } : component,
+    );
+  }
 
-  deleteComponent(id: string): void {}
+  deleteComponent(id: string): void {
+    this.components = this.components.filter(
+      (component) => component.id !== id,
+    );
+  }
 
   getComponents(): readonly Component[] {
     return this.components;
   }
 
-  swapComponentPositions(id1: string, id2: string): void {}
+  swapComponentPositions(id1: string, id2: string): void {
+    const index1 = this.components.findIndex(
+      (component) => component.id === id1,
+    );
+    const index2 = this.components.findIndex(
+      (component) => component.id === id2,
+    );
+
+    if (index1 === -1 && index2 === -1) return;
+
+    const newComponents = [...this.components];
+    [newComponents[index1], newComponents[index2]] = [
+      newComponents[index2],
+      newComponents[index1],
+    ];
+    this.components = newComponents;
+  }
 
   getComponentById(id: string): Component | undefined {
-    return undefined;
+    return this.components.find((component) => component.id === id);
   }
 }
