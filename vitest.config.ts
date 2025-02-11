@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config.d.ts";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
@@ -8,7 +8,7 @@ export default defineConfig({
     reporters: "basic",
     coverage: {
       include: ["src/**/"],
-      reporter: ["text", "json", "html", "text-summary"],
+      reporter: ["text", "json", "text-summary"],
       reportsDirectory: "./coverage/",
     },
   },

@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/", "examples/"], // dist/ 및 examples/ 폴더 무시
+    ignores: ["dist/", "examples/", "vite.config.js"], // dist/ 및 examples/ 폴더 무시
   },
   eslint.flatConfigs.recommended, // ✅ import 플러그인 Flat Config 적용
   tseslint.configs.recommended, // ✅ TypeScript ESLint 추천 설정 적용

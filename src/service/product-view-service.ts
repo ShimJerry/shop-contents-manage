@@ -1,10 +1,12 @@
+import { ProductView } from "../index.ts";
 import { IComponentCollectionService } from "./component-collection-service.ts";
-import { ProductView } from "./index.ts";
 
 /**
  * `ProductView`를 관리하는 서비스 인터페이스
  */
-export interface IProductViewService<T extends { id: string }> {
+export interface IProductViewService<
+  T extends { id: string } = { id: string },
+> {
   /**
    * 특정 ID를 가진 `ProductView`를 조회합니다.
    * @param params - 조회를 위한 파라미터 객체

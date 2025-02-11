@@ -190,6 +190,21 @@ export enum TabMovingType {
 export type TabComponent<T extends { id: string } = { id: string }> =
   RootComponent & {
     /**
+     * 탭의 고정 여부 (Sticky 기능)
+     * - 'Y': 사용자가 스크롤을 내릴 때 상단에 고정됨
+     * - 'N': 일반적인 동작, 스크롤 시 함께 이동
+     */
+    stickyYn: CommonYn;
+
+    /**
+     * 탭 이동 방식
+     * - `ANCHOR`: 특정 영역으로 스크롤 이동
+     * - `PAGING`: 보여지는 영역을 다음페이지 상품들로 교체
+     * - 탭을 클릭했을 때의 동작 방식이 결정됩니다.
+     */
+    tabMoving: TabMovingType;
+
+    /**
      * 탭 목록 배열
      * - 하나 이상의 탭을 포함하며, 각 탭은 상품 목록을 관리합니다.
      */
@@ -215,26 +230,11 @@ export type TabComponent<T extends { id: string } = { id: string }> =
       tabOrder: number;
 
       /**
-       * 탭 이동 방식
-       * - `ANCHOR`: 특정 영역으로 스크롤 이동
-       * - `PAGING`: 보여지는 영역을 다음페이지 상품들로 교체
-       * - 탭을 클릭했을 때의 동작 방식이 결정됩니다.
-       */
-      tabMoving: TabMovingType;
-
-      /**
        * 탭의 표시 여부
        * - 'Y': 탭이 활성화되어 보이는 상태
        * - 'N': 탭이 비활성화되어 숨겨진 상태
        */
       displayYn: CommonYn;
-
-      /**
-       * 탭의 고정 여부 (Sticky 기능)
-       * - 'Y': 사용자가 스크롤을 내릴 때 상단에 고정됨
-       * - 'N': 일반적인 동작, 스크롤 시 함께 이동
-       */
-      stickyYn: CommonYn;
 
       /**
        * 해당 탭에서 보여줄 상품 목록 설정

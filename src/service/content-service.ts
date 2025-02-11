@@ -1,9 +1,9 @@
+import { Content, RootComponent } from "../index.ts";
 import {
   Component,
   ComponentCollectionService,
   IComponentCollectionService,
 } from "./component-collection-service.ts";
-import { Content, RootComponent } from "./index.ts";
 
 /**
  * `Content`를 관리하는 서비스 인터페이스
@@ -21,12 +21,6 @@ export interface IContentService {
    * @returns 현재 콘텐츠 정보
    */
   getContent(): Content;
-
-  /**
-   * ComponentManager를 반환하여 컴포넌트 관리를 수행할 수 있도록 합니다.
-   * @returns ComponentManager 인터페이스
-   */
-  getComponentCollection(): IComponentCollectionService;
 
   /**
    * `ComponentCollectionService`를 통해 컴포넌트를 추가합니다.
@@ -52,7 +46,7 @@ export interface IContentService {
    * @param id1 - 첫 번째 컴포넌트의 ID
    * @param id2 - 두 번째 컴포넌트의 ID
    */
-  swapComponentPositions(id1: string, id2: string): void;
+  swapPositionById(id1: string, id2: string): void;
 
   /**
    * `ComponentCollectionService`를 통해 현재 등록된 모든 컴포넌트를 조회합니다.
@@ -69,11 +63,11 @@ export interface IContentService {
 
 export class ContentService implements IContentService {
   private content: Content;
-  private readonly componentCollection: IComponentCollectionService;
+  private readonly componentCollectionService: IComponentCollectionService;
 
   constructor(initialData: Content) {
     this.content = { ...initialData };
-    this.componentCollection = new ComponentCollectionService(
+    this.componentCollectionService = new ComponentCollectionService(
       initialData.components,
     );
   }
@@ -84,35 +78,31 @@ export class ContentService implements IContentService {
     this.content = { ...this.content, ...updates };
   }
 
-  getComponentCollection(): IComponentCollectionService {
-    return this.componentCollection;
-  }
-
   getContent(): Content {
     return this.content;
   }
 
   addComponent(component: Component): void {
-    this.componentCollection.addComponent(component);
+    this.componentCollectionService.addComponent(component);
   }
 
   updateComponent(id: string, updates: Partial<RootComponent>): void {
-    this.componentCollection.updateComponent(id, updates);
+    this.componentCollectionService.updateComponent(id, updates);
   }
 
   deleteComponent(id: string): void {
-    this.componentCollection.deleteComponent(id);
+    this.componentCollectionService.deleteComponent(id);
   }
 
-  swapComponentPositions(id1: string, id2: string): void {
-    this.componentCollection.swapComponentPositions(id1, id2);
+  swapPositionById(id1: string, id2: string): void {
+    this.componentCollectionService.swapPositionById(id1, id2);
   }
 
   getComponents(): readonly Component[] {
-    return this.componentCollection.getComponents();
+    return this.componentCollectionService.getComponents();
   }
 
   getComponentById(id: string): Component | undefined {
-    return this.componentCollection.getComponentById(id);
+    return this.componentCollectionService.getComponentById(id);
   }
 }
