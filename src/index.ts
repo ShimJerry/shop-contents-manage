@@ -307,9 +307,8 @@ export interface Content {
   /**
    * 콘텐츠를 구성하는 컴포넌트들
    * - `BlankComponent`, `TabComponent`, `ProductComponent`, `ImageComponent`, `TextComponent` 등 다양한 타입의 컴포넌트를 포함하는 배열입니다.
-   * - 배열 자체를 수정할 수 없도록 `readonly` 키워드를 추가합니다.
    */
-  readonly components: readonly (
+  readonly components: (
     | BlankComponent
     | TabComponent
     | ProductComponent
