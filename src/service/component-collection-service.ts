@@ -6,6 +6,7 @@ import {
   TabComponent,
   TextComponent,
 } from "../index.ts";
+import { BaseService } from "./base-service.ts";
 
 export type Component =
   | BlankComponent
@@ -92,133 +93,113 @@ export interface IComponentCollectionService {
    * @returns 해당 ID의 컴포넌트 또는 undefined
    */
   getComponentById(id: string): Component | undefined;
-
-  /**
-   * 특정 `TabComponent` 내에서 두 개의 `tabOrder`를 서로 교환하는 메서드
-   * @param tabComponentId - `TabComponent` ID
-   * @param order1 - 첫 번째 탭의 `tabOrder`
-   * @param order2 - 두 번째 탭의 `tabOrder`
-   */
-  updateTabOrder(tabComponentId: string, order1: number, order2: number): void;
 }
 
-export type StateUpdater = (
+export type Setter = (
   updateFn: (components: Component[]) => Component[],
 ) => void;
 
-export class ComponentCollectionService implements IComponentCollectionService {
-  private components: Component[];
-  private subscribers: ((components: Component[]) => void)[] = [];
-  private readonly setState?: StateUpdater;
+export type Getter = () => Component[];
 
-  constructor(
-    initialComponents: readonly Component[],
-    setState?: StateUpdater,
-  ) {
-    this.components = [...initialComponents];
-    this.setState = setState;
-  }
-
-  private notifySubscribers() {
-    this.subscribers.forEach((callback) => callback(this.components));
+export class ComponentCollectionService
+  extends BaseService<Component[]>
+  implements IComponentCollectionService
+{
+  constructor(getter: Getter, setter: Setter) {
+    super(getter, setter);
   }
 
   addComponent(component: Component): void {
-    const maxOrder = Math.max(
-      0,
-      ...this.components.map((comp) => comp.componentOrder),
-    );
-
-    this.components = [
-      ...this.components,
-      { ...component, componentOrder: maxOrder + 1 },
-    ];
+    this.updateState((prevComponents) => {
+      return [
+        ...prevComponents,
+        {
+          ...component,
+          componentOrder:
+            Math.max(0, ...prevComponents.map((comp) => comp.componentOrder)) +
+            1,
+        },
+      ];
+    });
   }
 
   updateComponent<T extends Component>(id: string, updates: Partial<T>): void {
-    this.components = this.components.map((component) =>
-      component.id === id ? this.mergeComponent(component, updates) : component,
+    this.updateState((prevComponents) =>
+      prevComponents.map((component) =>
+        component.id === id
+          ? this.mergeComponent(component, updates)
+          : component,
+      ),
     );
   }
 
   deleteComponent(id: string): void {
-    this.components = this.components
-      .filter((component) => component.id !== id)
-      .map((component, index) => ({
-        ...component,
-        componentOrder: index + 1,
-      }));
+    this.updateState((prevComponents) => {
+      return prevComponents
+        .filter((component) => component.id !== id)
+        .map((component, index) => ({
+          ...component,
+          componentOrder: index + 1,
+        }));
+    });
   }
 
   getComponents(): readonly Component[] {
-    return this.components;
+    return this.getData();
   }
 
   swapPositionById(id1: string, id2: string): void {
-    const index1 = this.components.findIndex(
-      (component) => component.id === id1,
-    );
-    const index2 = this.components.findIndex(
-      (component) => component.id === id2,
-    );
+    this.updateState((prevComponents) => {
+      const index1 = prevComponents.findIndex((c) => c.id === id1);
+      const index2 = prevComponents.findIndex((c) => c.id === id2);
 
-    if (index1 === -1 && index2 === -1) return;
+      if (index1 === -1 || index2 === -1) return prevComponents; // 한 개라도 못 찾으면 원래 배열 유지
 
-    const newComponents = [...this.components];
-    [newComponents[index1], newComponents[index2]] = [
-      newComponents[index2],
-      newComponents[index1],
-    ];
-    this.components = newComponents;
+      return prevComponents.map((component, index) => {
+        if (index === index1) {
+          return {
+            ...prevComponents[index2],
+            componentOrder: prevComponents[index1].componentOrder,
+          };
+        }
+        if (index === index2) {
+          return {
+            ...prevComponents[index1],
+            componentOrder: prevComponents[index2].componentOrder,
+          };
+        }
+        return component;
+      });
+    });
   }
 
   swapPositionByOrder(order1: number, order2: number): void {
-    const component1 = this.components.find(
-      (component) => component.componentOrder === order1,
-    );
-    const component2 = this.components.find(
-      (component) => component.componentOrder === order2,
-    );
+    this.updateState((prevComponents) => {
+      const component1 = prevComponents.find(
+        (c) => c.componentOrder === order1,
+      );
+      const component2 = prevComponents.find(
+        (c) => c.componentOrder === order2,
+      );
 
-    if (!component1 || !component2) return;
+      if (!component1 || !component2) return prevComponents; // 한 개라도 못 찾으면 원래 배열 유지
 
-    const tempOrder = component1.componentOrder;
-    component1.componentOrder = component2.componentOrder;
-    component2.componentOrder = tempOrder;
-
-    this.components = [...this.components].sort(
-      (a, b) => a.componentOrder - b.componentOrder,
-    );
+      return prevComponents
+        .map((component) => {
+          if (component.id === component1.id) {
+            return { ...component, componentOrder: order2 };
+          }
+          if (component.id === component2.id) {
+            return { ...component, componentOrder: order1 };
+          }
+          return component;
+        })
+        .sort((a, b) => a.componentOrder - b.componentOrder); // 순서 정렬
+    });
   }
 
   getComponentById(id: string): Component | undefined {
-    return this.components.find((component) => component.id === id);
-  }
-
-  updateTabOrder(tabComponentId: string, order1: number, order2: number): void {
-    this.components = this.components.map((component) => {
-      if (!isTabComponent(component) || component.id !== tabComponentId) {
-        return component;
-      }
-
-      const tabs = [...component.tab];
-
-      const index1 = tabs.findIndex((tab) => tab.tabOrder === order1);
-      const index2 = tabs.findIndex((tab) => tab.tabOrder === order2);
-
-      if (index1 === -1 || index2 === -1) return component;
-
-      // `tabOrder` 값 교환
-      [tabs[index1].tabOrder, tabs[index2].tabOrder] = [
-        tabs[index2].tabOrder,
-        tabs[index1].tabOrder,
-      ];
-
-      return {
-        ...component,
-        tab: tabs.sort((a, b) => a.tabOrder - b.tabOrder), // 순서 정렬
-      };
-    });
+    return this.getData().find((component) => component.id === id);
   }
 
   private mergeComponent<T extends Component>(

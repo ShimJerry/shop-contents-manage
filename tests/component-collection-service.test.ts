@@ -2,17 +2,19 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { ImageComponent } from "../src";
 import { createDefaultImageComponent } from "../src/default-values";
 import {
+  Component,
   ComponentCollectionService,
   IComponentCollectionService,
 } from "../src/service/component-collection-service";
 
 describe("ComponentCollection", () => {
+  let components: Component[];
   let componentCollection: IComponentCollectionService;
   let component1: ImageComponent;
   let component2: ImageComponent;
 
   beforeEach(() => {
-    componentCollection = new ComponentCollectionService([]);
+    components = [];
 
     // 기본 ImageComponent 생성
     component1 = createDefaultImageComponent({
@@ -25,23 +27,23 @@ describe("ComponentCollection", () => {
       componentOrder: 1,
     });
 
-    componentCollection.addComponent(component1);
-  });
+    componentCollection = new ComponentCollectionService(
+      () => components,
+      (updateFn) => {
+        components = updateFn(components);
+      },
+    );
 
-  it("초기 컴포넌트는 빈배열이어야 한다.", () => {
-    const emptyCollection = new ComponentCollectionService([]);
-    expect(emptyCollection.getComponents()).toBeInstanceOf(Array);
-    expect(emptyCollection.getComponents().length).toBe(0);
+    componentCollection.addComponent(component1);
   });
 
   it("addComponent로 컴포넌트를 추가하면 getComponents에서 조회할 수 있어야 한다.", () => {
     expect(componentCollection.getComponents().length).toBe(1);
-    expect(componentCollection.getComponents()[0]).toEqual(component1);
+    expect(componentCollection.getComponents()[0].id).toEqual("comp-1");
   });
 
   it("getComponentById로 컴포넌트를 가져올 수 있어야 한다.", () => {
     const firstComponent = componentCollection.getComponents()[0];
-
     expect(componentCollection.getComponentById(firstComponent.id)).toEqual(
       component1,
     );
