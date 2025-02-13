@@ -45,7 +45,7 @@ export function createDefaultRootComponent(
   return {
     id: uuidv4(),
     componentName: "Root Component",
-    componentOrder: 1,
+    order: 1,
     componentPeriod: {
       startDate: new Date(),
       endDate: new Date(),
@@ -172,3 +172,24 @@ export function createDefaultTabComponent<
     ...overrides,
   };
 }
+
+export type ComponentMap = {
+  image: ImageComponent;
+  text: TextComponent;
+  product: ProductComponent;
+  tab: TabComponent;
+  blank: BlankComponent;
+};
+
+// ✅ Component 타입과 생성 함수를 매핑하는 Factory 객체
+export const ComponentFactory: {
+  [K in keyof ComponentMap]: (
+    overrides?: Partial<Omit<ComponentMap[K], "type">>,
+  ) => ComponentMap[K];
+} = {
+  image: createDefaultImageComponent,
+  text: createDefaultTextComponent,
+  product: createDefaultProductComponent,
+  tab: createDefaultTabComponent,
+  blank: createDefaultBlankComponent,
+};

@@ -11,7 +11,7 @@ export type RootComponent = {
   type: ComponentType;
   id: string;
   componentName: string;
-  componentOrder: number;
+  order: number;
   componentPeriod: DisplayPeriod;
 };
 
@@ -227,7 +227,7 @@ export type TabComponent<T extends { id: string } = { id: string }> =
        * - 숫자가 작을수록 먼저 표시됩니다.
        * - 같은 `TabComponent` 내에서 탭의 위치를 정의하는 값입니다.
        */
-      tabOrder: number;
+      order: number;
 
       /**
        * 탭의 표시 여부

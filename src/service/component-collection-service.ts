@@ -1,3 +1,4 @@
+import { ComponentFactory, ComponentMap } from "../default-values.ts";
 import {
   BlankComponent,
   ImageComponent,
@@ -6,7 +7,8 @@ import {
   TabComponent,
   TextComponent,
 } from "../index.ts";
-import { BaseService } from "./base-service.ts";
+import { BaseCollectionService } from "./base-service.ts";
+import { ComponentService } from "./component-service.ts";
 
 export type Component =
   | BlankComponent
@@ -48,12 +50,17 @@ export function isBlankComponent(
 /**
  * `ComponentCollectionService`을 관리하는 서비스 인터페이스
  */
-export interface IComponentCollectionService {
+export interface IComponentCollectionService
+  extends BaseCollectionService<Component> {
   /**
-   * 새로운 컴포넌트를 추가합니다.
-   * @param component - 추가할 컴포넌트 객체
+   * 새로운 컴포넌트 추가 (타입에 따라 기본값 자동 생성)
+   * @param type - 추가할 컴포넌트의 타입 (`image`, `text`, `product`, `tab`, `blank`)
+   * @param overrides - 기본값을 덮어쓸 추가 옵션
    */
-  addComponent(component: Component): void;
+  addComponent<T extends keyof ComponentMap>(
+    type: T,
+    overrides?: Partial<Omit<ComponentMap[T], "type">>,
+  ): void;
 
   /**
    * 특정 ID를 가진 컴포넌트를 업데이트합니다.
@@ -69,57 +76,52 @@ export interface IComponentCollectionService {
   deleteComponent(id: string): void;
 
   /**
-   * 두 개의 order를 받아서 그들의 위치를 바꿉니다.
-   * @param order1 - 첫 번째 컴포넌트의 order
-   * @param order2 - 두 번째 컴포넌트의 order
-   */
-  swapPositionByOrder: (order1: number, order2: number) => void;
-
-  /**
-   * 두 개의 컴포넌트 ID를 받아서 그들의 위치를 바꿉니다.
-   * @param id1 - 첫 번째 컴포넌트의 ID
-   * @param id2 - 두 번째 컴포넌트의 ID
-   */
-  swapPositionById: (id1: string, id2: string) => void;
-
-  /**
    * 현재 컴포넌트 목록을 반환합니다.
    */
   getComponents(): readonly Component[];
-
-  /**
-   * 특정 ID의 컴포넌트를 반환합니다.
-   * @param id - 가져올 컴포넌트의 ID
-   * @returns 해당 ID의 컴포넌트 또는 undefined
-   */
-  getComponentById(id: string): Component | undefined;
 }
 
-export type Setter = (
-  updateFn: (components: Component[]) => Component[],
-) => void;
-
-export type Getter = () => Component[];
-
 export class ComponentCollectionService
-  extends BaseService<Component[]>
+  extends BaseCollectionService<Component>
   implements IComponentCollectionService
 {
-  constructor(getter: Getter, setter: Setter) {
+  private componentServices: Map<string, ComponentService> = new Map();
+
+  constructor(
+    getter: () => Component[],
+    setter: (updateFn: (components: Component[]) => Component[]) => void,
+  ) {
     super(getter, setter);
   }
 
-  addComponent(component: Component): void {
+  addComponent<T extends keyof ComponentMap>(
+    type: T,
+    overrides?: Partial<Omit<ComponentMap[T], "type">>,
+  ): void {
     this.updateState((prevComponents) => {
-      return [
-        ...prevComponents,
-        {
-          ...component,
-          componentOrder:
-            Math.max(0, ...prevComponents.map((comp) => comp.componentOrder)) +
-            1,
-        },
-      ];
+      // 현재 가장 높은 order 값 찾기
+      const maxOrder = Math.max(0, ...prevComponents.map((comp) => comp.order));
+
+      const newComponent: ComponentMap[T] = {
+        ...ComponentFactory[type](overrides),
+        order: maxOrder + 1,
+      };
+
+      newComponent.order = maxOrder + 1;
+
+      const componentService = new ComponentService(
+        () => this.findById(newComponent.id) ?? newComponent,
+        (updateFn) =>
+          this.updateState((prev) =>
+            prev.map((comp) =>
+              comp.id === newComponent.id ? updateFn(comp) : comp,
+            ),
+          ),
+      );
+
+      this.componentServices.set(newComponent.id, componentService);
+
+      return [...prevComponents, newComponent];
     });
   }
 
@@ -135,71 +137,18 @@ export class ComponentCollectionService
 
   deleteComponent(id: string): void {
     this.updateState((prevComponents) => {
+      this.componentServices.delete(id);
       return prevComponents
         .filter((component) => component.id !== id)
         .map((component, index) => ({
           ...component,
-          componentOrder: index + 1,
+          order: index + 1,
         }));
     });
   }
 
   getComponents(): readonly Component[] {
     return this.getData();
-  }
-
-  swapPositionById(id1: string, id2: string): void {
-    this.updateState((prevComponents) => {
-      const index1 = prevComponents.findIndex((c) => c.id === id1);
-      const index2 = prevComponents.findIndex((c) => c.id === id2);
-
-      if (index1 === -1 || index2 === -1) return prevComponents; // 한 개라도 못 찾으면 원래 배열 유지
-
-      return prevComponents.map((component, index) => {
-        if (index === index1) {
-          return {
-            ...prevComponents[index2],
-            componentOrder: prevComponents[index1].componentOrder,
-          };
-        }
-        if (index === index2) {
-          return {
-            ...prevComponents[index1],
-            componentOrder: prevComponents[index2].componentOrder,
-          };
-        }
-        return component;
-      });
-    });
-  }
-
-  swapPositionByOrder(order1: number, order2: number): void {
-    this.updateState((prevComponents) => {
-      const component1 = prevComponents.find(
-        (c) => c.componentOrder === order1,
-      );
-      const component2 = prevComponents.find(
-        (c) => c.componentOrder === order2,
-      );
-
-      if (!component1 || !component2) return prevComponents; // 한 개라도 못 찾으면 원래 배열 유지
-
-      return prevComponents
-        .map((component) => {
-          if (component.id === component1.id) {
-            return { ...component, componentOrder: order2 };
-          }
-          if (component.id === component2.id) {
-            return { ...component, componentOrder: order1 };
-          }
-          return component;
-        })
-        .sort((a, b) => a.componentOrder - b.componentOrder); // 순서 정렬
-    });
-  }
-
-  getComponentById(id: string): Component | undefined {
-    return this.getData().find((component) => component.id === id);
   }
 
   private mergeComponent<T extends Component>(

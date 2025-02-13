@@ -23,7 +23,12 @@ describe("ContentService", () => {
       components: [],
     };
 
-    contentService = new ContentService(sampleContent);
+    contentService = new ContentService(
+      () => sampleContent,
+      (updateFn) => {
+        sampleContent = updateFn(sampleContent);
+      },
+    );
   });
 
   it("초기 컨텐츠 데이터를 가져올 수 있어야 한다.", () => {

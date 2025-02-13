@@ -1,5 +1,5 @@
 import { Content } from "../index.ts";
-import { BaseService } from "./base-service.ts";
+import { BaseService, IBaseService } from "./base-service.ts";
 import {
   ComponentCollectionService,
   IComponentCollectionService,
@@ -8,7 +8,7 @@ import {
 /**
  * `Content`를 관리하는 서비스 인터페이스
  */
-export interface IContentService {
+export interface IContentService extends IBaseService<Content> {
   /**
    * 콘텐츠의 메타데이터를 업데이트합니다.
    * 컴포넌트 리스트(components) 외의 데이터를 수정할 때 사용됩니다.
@@ -33,7 +33,7 @@ export class ContentService
   extends BaseService<Content>
   implements IContentService
 {
-  private componentCollectionService: IComponentCollectionService;
+  private readonly componentCollectionService: IComponentCollectionService;
 
   constructor(
     getter: () => Content,
@@ -41,7 +41,6 @@ export class ContentService
   ) {
     super(getter, setter);
 
-    // 컴포넌트 컬렉션 서비스 초기화 (Content의 components 배열을 관리)
     this.componentCollectionService = new ComponentCollectionService(
       () => this.getData().components, // getter
       (updateFn) =>
