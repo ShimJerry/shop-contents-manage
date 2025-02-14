@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { BaseService } from "../src/service/base-service";
+import { BaseService } from "../service/base-service";
 
 // 테스트에 사용할 더미 데이터 타입
 interface TestData {

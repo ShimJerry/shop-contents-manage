@@ -1,12 +1,9 @@
+import { Content } from "@_types";
 import { beforeEach, describe, expect, it } from "vitest";
-import { Content } from "../src";
-import {
-  ContentService,
-  IContentService,
-} from "../src/service/content-service";
+import { ContentService } from "../service/content-service";
 
 describe("ContentService", () => {
-  let contentService: IContentService;
+  let contentService: ContentService;
   let sampleContent: Content;
 
   beforeEach(() => {

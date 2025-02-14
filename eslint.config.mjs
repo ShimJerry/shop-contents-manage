@@ -1,4 +1,4 @@
-import tseslintParser from "@typescript-eslint/parser";
+import tseslintParser from "@_typescript-eslint/parser";
 import vitest from "@vitest/eslint-plugin";
 import eslint from "eslint-plugin-import";
 import tseslint from "typescript-eslint";
@@ -29,7 +29,15 @@ export default tseslint.config(
       "import/namespace": "off",
       "import/no-named-as-default-member": "off",
       "import/no-duplicates": "error",
-      "import/extensions": ["error", "always"],
+      "import/extensions": [
+        "error",
+        "always",
+        {
+          ts: "never",
+          tsx: "never",
+          d: "never",
+        },
+      ],
       "import/order": [
         "error",
         {
@@ -54,15 +62,15 @@ export default tseslint.config(
           pathGroupsExcludedImportTypes: ["builtin"],
         },
       ],
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": [
+      "@_typescript-eslint/no-explicit-any": "off",
+      "@_typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
     },
   },
   {
-    files: ["tests/**/*.ts"],
+    files: ["tests/**/*"],
     languageOptions: {
       parser: tseslintParser,
     },
@@ -71,7 +79,7 @@ export default tseslint.config(
     },
     rules: {
       "import/extensions": ["error", "never"],
-      "@typescript-eslint/no-unused-vars": "off",
+      "@_typescript-eslint/no-unused-vars": "off",
       "vitest/expect-expect": "off",
       "vitest/consistent-test-it": [
         "error",

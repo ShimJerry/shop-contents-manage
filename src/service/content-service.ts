@@ -1,33 +1,6 @@
-import { Content } from "../index.ts";
-import { BaseService, IBaseService } from "./base-service.ts";
-import {
-  ComponentCollectionService,
-  IComponentCollectionService,
-} from "./component-collection-service.ts";
-
-/**
- * `Content`를 관리하는 서비스 인터페이스
- */
-export interface IContentService extends IBaseService<Content> {
-  /**
-   * 콘텐츠의 메타데이터를 업데이트합니다.
-   * 컴포넌트 리스트(components) 외의 데이터를 수정할 때 사용됩니다.
-   * @param updates - 업데이트할 필드
-   */
-  updateContentMeta(updates: Partial<Omit<Content, "id" | "components">>): void;
-
-  /**
-   * 현재 Content 객체를 반환합니다.
-   * @returns 현재 콘텐츠 정보
-   */
-  getContent(): Content;
-
-  /**
-   * 컴포넌트 컬렉션 서비스 반환
-   * @returns `ComponentCollectionService` 인스턴스
-   */
-  getComponentCollectionService(): IComponentCollectionService;
-}
+import { Content, IComponentCollectionService, IContentService } from "@_types";
+import { BaseService } from "./base-service";
+import { ComponentCollectionService } from "./component-collection-service";
 
 export class ContentService
   extends BaseService<Content>
@@ -40,14 +13,13 @@ export class ContentService
     setter: (updateFn: (data: Content) => Content) => void,
   ) {
     super(getter, setter);
-
     this.componentCollectionService = new ComponentCollectionService(
-      () => this.getData().components, // getter
+      () => this.getData().components,
       (updateFn) =>
         this.updateState((prevContent) => ({
           ...prevContent,
           components: updateFn(prevContent.components),
-        })), // setter
+        })),
     );
   }
 
@@ -65,18 +37,10 @@ export class ContentService
   }
 
   /**
-   * 현재 콘텐츠 반환
-   * @returns `Content` 객체
-   */
-  getContent(): Content {
-    return this.getData();
-  }
-
-  /**
    * 컴포넌트 컬렉션 서비스 반환
    * @returns `ComponentCollectionService` 인스턴스
    */
-  getComponentCollectionService(): IComponentCollectionService {
+  getComponentCollection(): IComponentCollectionService {
     return this.componentCollectionService;
   }
 }

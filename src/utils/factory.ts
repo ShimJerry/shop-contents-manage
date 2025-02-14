@@ -1,7 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
 import {
   BadgeType,
   BlankComponent,
+  ComponentMap,
   Content,
   ImageComponent,
   ListType,
@@ -13,7 +13,8 @@ import {
   TabMovingType,
   TextComponent,
   ViewExtensionType,
-} from "./index.ts";
+} from "@_types";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * `Content` 객체를 생성하는 함수
@@ -150,7 +151,7 @@ export function createDefaultTab<T extends { id: string } = { id: string }>(
   return {
     id: uuidv4(),
     tabName: "",
-    tabOrder: 0,
+    order: 0,
     displayYn: "Y",
     productView: createDefaultProductView<T>(),
     ...overrides,
@@ -172,14 +173,6 @@ export function createDefaultTabComponent<
     ...overrides,
   };
 }
-
-export type ComponentMap = {
-  image: ImageComponent;
-  text: TextComponent;
-  product: ProductComponent;
-  tab: TabComponent;
-  blank: BlankComponent;
-};
 
 // ✅ Component 타입과 생성 함수를 매핑하는 Factory 객체
 export const ComponentFactory: {

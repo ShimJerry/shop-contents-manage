@@ -1,85 +1,23 @@
-import { ComponentFactory, ComponentMap } from "../default-values.ts";
 import {
   BlankComponent,
+  Component,
+  ComponentMap,
+  IComponentCollectionService,
   ImageComponent,
   ProductComponent,
-  RootComponent,
   TabComponent,
   TextComponent,
-} from "../index.ts";
-import { BaseCollectionService } from "./base-service.ts";
-import { ComponentService } from "./component-service.ts";
-
-export type Component =
-  | BlankComponent
-  | TabComponent
-  | ProductComponent
-  | ImageComponent
-  | TextComponent;
-
-export function isImageComponent(
-  component: Component,
-): component is ImageComponent {
-  return component.type === "image";
-}
-
-export function isTextComponent(
-  component: Component,
-): component is TextComponent {
-  return component.type === "text";
-}
-
-export function isProductComponent(
-  component: Component,
-): component is ProductComponent {
-  return component.type === "product";
-}
-
-export function isTabComponent(
-  component: Component,
-): component is TabComponent {
-  return component.type === "tab";
-}
-
-export function isBlankComponent(
-  component: Component,
-): component is BlankComponent {
-  return component.type === "blank";
-}
-
-/**
- * `ComponentCollectionService`을 관리하는 서비스 인터페이스
- */
-export interface IComponentCollectionService
-  extends BaseCollectionService<Component> {
-  /**
-   * 새로운 컴포넌트 추가 (타입에 따라 기본값 자동 생성)
-   * @param type - 추가할 컴포넌트의 타입 (`image`, `text`, `product`, `tab`, `blank`)
-   * @param overrides - 기본값을 덮어쓸 추가 옵션
-   */
-  addComponent<T extends keyof ComponentMap>(
-    type: T,
-    overrides?: Partial<Omit<ComponentMap[T], "type">>,
-  ): void;
-
-  /**
-   * 특정 ID를 가진 컴포넌트를 업데이트합니다.
-   * @param id - 업데이트할 컴포넌트의 ID
-   * @param updates - 업데이트할 내용
-   */
-  updateComponent(id: string, updates: Partial<RootComponent>): void;
-
-  /**
-   * 특정 ID를 가진 컴포넌트를 삭제합니다.
-   * @param id - 삭제할 컴포넌트의 ID
-   */
-  deleteComponent(id: string): void;
-
-  /**
-   * 현재 컴포넌트 목록을 반환합니다.
-   */
-  getComponents(): readonly Component[];
-}
+} from "@_types";
+import { ComponentFactory } from "../utils/factory";
+import {
+  isBlankComponent,
+  isImageComponent,
+  isProductComponent,
+  isTabComponent,
+  isTextComponent,
+} from "../utils/type-guards";
+import { BaseCollectionService } from "./base-collection-service";
+import { ComponentService } from "./component-service";
 
 export class ComponentCollectionService
   extends BaseCollectionService<Component>
@@ -125,7 +63,10 @@ export class ComponentCollectionService
     });
   }
 
-  updateComponent<T extends Component>(id: string, updates: Partial<T>): void {
+  updateComponent<T extends Component>(
+    id: string,
+    updates: Partial<Omit<T, "id" | "order">>,
+  ): void {
     this.updateState((prevComponents) =>
       prevComponents.map((component) =>
         component.id === id
@@ -147,8 +88,8 @@ export class ComponentCollectionService
     });
   }
 
-  getComponents(): readonly Component[] {
-    return this.getData();
+  getComponent(id: string): ComponentService | undefined {
+    return this.componentServices.get(id);
   }
 
   private mergeComponent<T extends Component>(
